@@ -1,10 +1,11 @@
 const router = require("express").Router();
 const User = require("../models/userModel");
 const Post = require("../models/postModel");
+const bcrypt = require("bcrypt");
 const verifyToken = require("../middleware/auth");
 
 // TÌM KIẾM NGƯỜI DÙNG THEO USERNAME OR EMAIL
-router.get('/getuser', verifyToken, async (req, res) => {
+router.get('/searchUser', verifyToken, async (req, res) => {
   const username = req.query.username;
   let userArray = [];
   try {
@@ -14,101 +15,119 @@ router.get('/getuser', verifyToken, async (req, res) => {
                userArray.push(user);
            }
       })
-      res.status(200).json({success: false, message: "Lấy dữ liệu thành công", data: {userArray}});
+      res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {userArray}});
   } catch (err) {
-      res.status(500).json(err);
+      res.status(500).json({success: false, message: err.message, data: {}});
   }
   
-})
+});
 
 // GET A USER
-router.get("/profile/:id", verifyToken, async (req, res) => {
+router.get("/getUser/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
     const user = await User.findById(id);
-    res.status(200).json({success: false, message: "Lấy dữ liệu thành công", data: {user}});
+    res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {user}});
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({success: false, message: err.message, data: {}});
   }
 });
 
 // GET ALL USER
-router.get("/getalluser", verifyToken, async (req, res) => {
+router.get("/getAllUser", verifyToken, async (req, res) => {
   try {
-    const user = await User.find();
-    res.status(200).json({success: false, message: "Lấy dữ liệu thành công", data: {user}});
+    const users = await User.find();
+    res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({success: false, message: err.message, data: {}});
   }
 });
 
 // UPDATE INFO A USER
-router.put("/profile/:id", async (req, res) => {
+router.put("/updateUser", verifyToken, async (req, res) => {
   try {
+    const userId = req.userId;
     const user = await User.findByIdAndUpdate(
-      req.params.id,
+      {_id: userId},
       {
         $set: req.body,
       },
       { new: true }
     );
 
-    res.status(200).json({success: false, message: "Cập nhật thông tin thành công", data: {user}});
+    res.status(200).json({success: true, message: "Cập nhật thông tin thành công", data: {user}});
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({success: false, message: err.message, data: {}});
   }
 });
 
 // ADD SEARCH HISTORY FOR USER
-router.put("/addSearchHistory", async (req, res) => {
+router.put("/addSearchHistory", verifyToken, async (req, res) => {
     try {
-      const currentUser = await User.findById(req.body.userId);   
-        const history = await currentUser.updateOne({ $push: { searchHistorys: req.body.history } });
-        res.status(200).json({success: true, message: "Thêm thành công", data: {history}});   
+      const { history } = req.body;
+      const currentUser = await User.findById(req.userId);   
+      await currentUser.updateOne({ $push: { searchHistorys: history } }, {}, {new: true});
+      res.status(200).json({success: true, message: "Thêm thành công", data: {historys: currentUser.searchHistorys}});   
     } catch (err) {
-      res.status(500).json(err);
+      res.status(500).json({success: false, message: err.message, data: {}});
     }
 });
 
 // DELETE SEARCH HISTORY FOR USER
-router.put("/deleteSearchHistory", async (req, res) => {
+router.put("/deleteSearchHistory", verifyToken, async (req, res) => {
   try {
-    const currentUser = await User.findById(req.body.userId);   
-      const history = await currentUser.updateOne({ $pull: { searchHistorys: req.body.history } });
-      res.status(200).json(history);   
+    const { history } = req.body;
+    const currentUser = await User.findById(req.userId);   
+    await currentUser.updateOne({ $pull: { searchHistorys: history }},{}, {new: true});
+    res.status(200).json({success: true, message: 'Thành công', data: {historys: currentUser.searchHistorys}});   
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({success: false, message: err.message, data: {}});
   }
 });
 
-// SAVE / UNSAVE POST
-router.put("/savepost/", async (req, res) => {
+// SAVE/UNSAVE POST
+router.put("/savePost/", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.body.userId);
-    if (!user.postSaved.includes(req.body.postId)) {
-      await user.updateOne({ $push: { postSaved: req.body.postId } });
-      res.status(200).json("Bài viết đã được lưu thành công");
+    const { postId } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user.postSaved.includes(postId)) {
+      await user.updateOne({ $push: { postSaved: postId } });
+      res.status(200).json({success: true, message: "Bài viết được lưu thành công", data: {}});
     } else {
-      await user.updateOne({ $pull: { postSaved: req.body.postId } });
-      res.status(200).json("Bỏ lưu bài viết thành công");
+      await user.updateOne({ $pull: { postSaved: postId } });
+      res.status(200).json({success: true, message: "Bỏ lưu bài viết thành công", data: {}});
     }
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({success: false, message: err.message, data: {}});
   }
 });
 
 // GET ALL POST SAVED
-router.get("/savepost/:userId", verifyToken, async (req, res) => {
+router.get("/savePost", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
+    const user = await User.findById(req.userId);
     const posts = await Promise.all(
       user.postSaved.map((postId) => {
-        return Post.findById(postId).populate('authorId', ['username', 'avatar']);
+        return Post.findById(postId).populate('authorId', ['id', 'username', 'avatar']);
       })
     );
-    res.status(200).json(posts);
+    res.status(200).json({success: true, message: 'Thành công', data: {posts}});
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({success: false, message: err.message, data: {}});
+  }
+});
+
+// CHANGE PASSWORD
+router.put("/changePassword", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { password } = req.body;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(password, salt);
+    await User.findByIdAndUpdate({_id: userId}, {password: hashedPass}, {new: true});
+    res.status(200).json({success: true, message: 'Đổi mật khẩu thành công', data: {}});
+  } catch (err) {
+    res.status(500).json({success: false, message: err.message, data: {}});
   }
 });
 

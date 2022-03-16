@@ -21,8 +21,8 @@ router.post("/register", async (req, res) => {
         });
         const user = await newUser.save();
         res.status(200).json({success: true, message: "Đăng ký thành công", data: {user: user}});
-    } catch (error) {
-        res.status(500).json(error);
+    } catch (err) {
+        res.status(500).json({success: false, message: err.message, data: {}});
     }
 })
 
@@ -30,10 +30,10 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try {
         const newUser = await User.findOne({email: req.body.email});
-        !newUser && res.status(400).json({success: false, message: "Sai email hoặc mật khẩu", data: {}});  
+        if (!newUser) return res.status(400).json({success: false, message: "Sai email hoặc mật khẩu", data: {}});  
             
         const validate = await bcrypt.compare(req.body.password, newUser.password);
-        !validate && res.status(400).json({success: false, message: "Sai email hoặc mật khẩu", data: {}});          
+        if (!validate) return res.status(400).json({success: false, message: "Sai email hoặc mật khẩu", data: {}});          
 
         // tạo token
         const token = jwt.sign({_id: newUser._id, _role: newUser.role}, process.env.ACCESS_TOKEN_SECRET);
@@ -41,8 +41,8 @@ router.post("/login", async (req, res) => {
         // res.header('auth-token', token);
         res.status(200).json({success: true, message: "Đăng nhập thành công", data: {newUser: others, token: token}});
 
-    } catch (error) {
-        res.status(500).json(error);
+    } catch (err) {
+        res.status(500).json({success: false, message: err.message, data: {}});
     }
 })
 
@@ -53,9 +53,22 @@ router.get('/', verifyToken, async (req, res) => {
         if (!user)
             return res.status(400).json('User not found')
         res.status(200).json(user);
-	} catch (error) {
-		res.status(500).json('Internal server error')
+	} catch (err) {
+		res.status(500).json({success: false, message: err.message, data: {}});
 	}
 });
+
+// FORGET PASSWORD
+router.put("/forgetPassword", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash(password, salt);
+      await User.findOneAndUpdate({email: email}, {password: hashedPass}, {new: true});
+      res.status(200).json({success: true, message: 'Thành công', data: {}});
+    } catch (err) {
+      res.status(500).json({success: false, message: err.message, data: {}});
+    }
+  });
 
 module.exports = router;

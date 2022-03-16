@@ -10,8 +10,8 @@ const PostSchema = new mongoose.Schema({
         {ref: 'user', type: String}     
     ],
     images: {
-        type: Array,
-        default: [],
+        type: String,
+        default: '',
     },
     totalReport: {
         type: Number,
@@ -23,7 +23,7 @@ const PostSchema = new mongoose.Schema({
         required: true,
     },
     themen: {
-        type: String,
+        type: Array,
         default: '',
     }
 
