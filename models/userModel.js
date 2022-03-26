@@ -5,11 +5,6 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    role: {
-        type: String,
-        default: '',
-        required: true,
-    },
     email: {
         type: String,
         required: true,
