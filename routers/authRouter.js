@@ -17,7 +17,7 @@ router.post("/register", async (req, res) => {
             username: req.body.username,
             email: req.body.email,
             password: hashedPass,
-            role: req.body.role,
+            // role: req.body.role,
         });
         const user = await newUser.save();
         res.status(200).json({success: true, message: "Đăng ký thành công", data: {user: user}});
@@ -52,7 +52,7 @@ router.get('/', verifyToken, async (req, res) => {
         const user = await User.findById(req.userId).select('-password');
         if (!user)
             return res.status(400).json('User not found')
-        res.status(200).json(user);
+        res.status(200).json({success: true, message: 'Lay thanh cong', data: {user}});
 	} catch (err) {
 		res.status(500).json({success: false, message: err.message, data: {}});
 	}
