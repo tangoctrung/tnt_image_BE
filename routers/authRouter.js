@@ -11,7 +11,7 @@ router.post("/register", async (req, res) => {
         const hashedPass = await bcrypt.hash(req.body.password, salt);
         const user1 = await User.findOne({email: req.body.email});
         if (user1) 
-            return res.status(400).send({success: false, message: "Email đã được sử dụng", data: {}})
+            return res.status(400).json({success: false, message: "Email đã được sử dụng", data: {}})
         
         const newUser = new User({
             username: req.body.username,
