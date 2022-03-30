@@ -121,9 +121,13 @@ router.get("/savePost", verifyToken, async (req, res) => {
 router.put("/changePassword", verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
-    const { password } = req.body;
+    const { passwordNew, confirmPasswordNew } = req.body;
+    if (passwordNew !== confirmPasswordNew) {
+      return res.status(400).json({success: false, message: 'Mật khẩu nhập lại không đúng', data: {}});
+    }
+
     const salt = await bcrypt.genSalt(10);
-    const hashedPass = await bcrypt.hash(password, salt);
+    const hashedPass = await bcrypt.hash(passwordNew, salt);
     await User.findByIdAndUpdate({_id: userId}, {password: hashedPass}, {new: true});
     res.status(200).json({success: true, message: 'Đổi mật khẩu thành công', data: {}});
   } catch (err) {
