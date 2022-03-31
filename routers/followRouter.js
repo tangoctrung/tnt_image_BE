@@ -8,11 +8,11 @@ router.get("/followers", verifyToken, async (req, res) => {
 
     const userId = req.userId;
     try {
-      const users = await Follow.find({isfollower: userId}).populate('isfollower', ['avatar', 'id', 'username']);
+      const users = await Follow.find({isfollower: userId}).populate('follower', ['avatar', 'id', 'username']);
       if (users.length > 0) {
         res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
       } else {
-        res.status(200).json({success: false, message: "Lấy dữ liệu không thành công", data: {}});
+        res.status(200).json({success: true, message: "Không có dữ liệu", data: {}});
       }
     } catch (err) {
         res.json({success: false, message: err.message, data: {}});
@@ -23,11 +23,11 @@ router.get("/followers", verifyToken, async (req, res) => {
 router.get("/followings", verifyToken, async (req, res) => {
     const userId = req.userId;
     try {
-        const users = await Follow.find({follower: userId}).populate('follower', ['avatar', 'id', 'username']);
+        const users = await Follow.find({follower: userId}).populate('isfollower', ['avatar', 'id', 'username']);
         if (users.length > 0) {
           res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
         } else {
-          res.status(200).json({success: false, message: "Lấy dữ liệu không thành công", data: {}});
+          res.status(200).json({success: true, message: "Không có dữ liệu", data: {}});
         }
       } catch (err) {
           res.json({success: false, message: err.message, data: {}});
@@ -53,7 +53,7 @@ router.post("/follow/:userId", verifyToken, async (req, res) => {
                 isfollower: isfollowerId
             });
             await newFollow.save();
-            return res.status(403).json({success: true, message: "Đã theo dõi", data: {}});
+            return res.status(200).json({success: true, message: "Đã theo dõi", data: {}});
         }
     } catch (err) {
         res.json({success: false, message: err.message, data: {}});
@@ -74,9 +74,9 @@ router.delete("/unfollow/:userId", verifyToken, async (req, res) => {
             ]
         });
         if (follow) {
-            return res.status(403).json({success: true, message: "Đã hủy theo dõi", data: {}});
+            return res.status(200).json({success: true, message: "Đã hủy theo dõi", data: {}});
         } else {      
-            return res.status(403).json({success: true, message: "Không thể hủy theo dõi", data: {}});
+            return res.status(200).json({success: true, message: "Không thể hủy theo dõi", data: {}});
         }
     } catch (err) {
         res.json({success: false, message: err.message, data: {}});
