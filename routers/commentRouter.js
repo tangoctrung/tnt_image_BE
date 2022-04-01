@@ -9,7 +9,10 @@ router.post('/createComment/', verifyToken, async (req, res) => {
         const {postId, content} = req.body;
         const newComment = new Comment({writerId, postId, content});
         const savedComment = await newComment.save();
-        res.status(200).json({success: true, message: 'Tạo thành công', data: {savedComment}});
+        // await savedComment.populate('writerId', ['_id', 'username', 'avatar']);
+        const comment = await Comment.findOne({_id: savedComment._id})
+            .populate('writerId', ['_id', 'username', 'avatar']);
+        res.status(200).json({success: true, message: 'Tạo thành công', data: {comment}});
     } catch (err) {
         res.status(500).json({success: false, message: err.message, data: {}});
     }
