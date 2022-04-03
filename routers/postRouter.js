@@ -107,10 +107,10 @@ router.put("/post/:id/like", verifyToken, async (req, res) => {
       const post = await Post.findById(req.params.id);
       if (!post.likes.includes(userId)) {
         await post.updateOne({ $push: { likes: userId } });
-        res.status(200).json({success: false, message: "Bài viết đã được like", data: {}});
+        res.status(200).json({success: true, message: "Bài viết đã được like", data: {}});
       } else {
         await post.updateOne({ $pull: { likes: userId } });
-        res.status(200).json({success: false, message: "Đã bỏ like bài viết", data: {}});
+        res.status(200).json({success: true, message: "Đã bỏ like bài viết", data: {}});
       }
     } catch (err) {
       res.status(500).json(err);
