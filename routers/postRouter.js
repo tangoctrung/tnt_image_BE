@@ -104,7 +104,7 @@ router.get('/getpostfollowing', verifyToken, async (req, res) => {
 router.get('/getpostdiscover', verifyToken, async (req, res) => {
     const userId = req.userId;
     try {
-        const listPost  = Post.find().populate('authorId', ['id', 'username', 'avatar']);
+        const listPost  = await Post.find().populate('authorId', ['id', 'username', 'avatar']);
         return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {listPost}});
         
     } catch (err) {
