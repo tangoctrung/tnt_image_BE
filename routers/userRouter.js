@@ -11,7 +11,8 @@ router.get('/searchUser', verifyToken, async (req, res) => {
   try {
       const users = await User.find();
       users.map(user => {
-           if (user.username.toLowerCase().includes(username.toLowerCase())) {
+           if (user.username.toLowerCase().includes(username.toLowerCase()) ||
+              user.email.toLowerCase().includes(username.toLowerCase())) {
                userArray.push(user);
            }
       })
