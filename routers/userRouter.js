@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const User = require("../models/userModel");
+const Follow = require("../models/followModel");
 const Post = require("../models/postModel");
 const bcrypt = require("bcrypt");
 const verifyToken = require("../middleware/auth");
@@ -28,10 +29,10 @@ router.get("/getUser/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
     const newUser = await User.findById(id);
-    const follow = await User.findOne({
+    const follow = await Follow.findOne({
       $and: [
         {follower: req.userId}, 
-        {isfollower: newUser.id}
+        {isfollower: id}
       ]
     });
     let user;
