@@ -27,7 +27,19 @@ router.get('/searchUser', verifyToken, async (req, res) => {
 router.get("/getUser/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
-    const user = await User.findById(id);
+    const newUser = await User.findById(id);
+    const follow = await User.findOne({
+      $and: [
+        {follower: req.userId}, 
+        {isfollower: newUser.id}
+      ]
+    });
+    let user;
+    if (follow) {
+      user = {...newUser._doc, isFollow: true};
+    } else {
+      user = {...newUser._doc, isFollow: false};
+    }
     res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {user}});
   } catch (err) {
     res.status(500).json({success: false, message: err.message, data: {}});
