@@ -8,7 +8,8 @@ router.post('/createConversation', verifyToken, async (req, res) => {
         const userId = req.userId;
         const firstUserId = req.body.firstUserId;
         const newConversation = new Conversation({
-            members: [userId, firstUserId],
+            members1: userId,
+            members2: firstUserId,
         });
         const savedConversation = await newConversation.save();
         res.status(200).json({success: true, message: 'Tạo thành công', data: {savedConversation}});
@@ -22,9 +23,9 @@ router.post('/createConversation', verifyToken, async (req, res) => {
 router.get('/getConversation', verifyToken, async (req, res) => {
     try {
         const userId = req.userId;
-        const conversations = await Conversation.find({
-            members: { $in: [userId] },
-          });
+        const conversations = await Conversation.find({$or: [{members1: userId}, {members2: userId}]})
+            .populate('members1', ['id', 'username', 'avatar'])
+            .populate('members2', ['id', 'username', 'avatar']);
         res.status(200).json({success: true, message: 'Lấy thành công', data: {conversations}});
     } catch (err) {
         res.status(500).json({success: false, message: err.message, data: {}});
@@ -43,30 +44,30 @@ router.get('/getConversation/:conversationId', verifyToken, async (req, res) => 
 });
 
 // LẤY CUỘC TRÒ CHUYỆN CỦA 2 NGƯỜI
-router.get("/getConversation/:firstUserId", async (req, res) => {
-    try {
-        const userId = req.userId;
-        const firstUserId = req.params.firstUserId;
-        const conversation = await Conversation.findOne({
-            members: { $all: [userId, firstUserId] },
-        });
-        if (conversation) {
-            res.status(200).json({success: true, message: 'Lấy thành công', data: {conversation}})
-        } else {
-            const newConversation = new Conversation({
-                members: [userId, firstUserId],
-            });
-            try {
-                const savedConversation = await newConversation.save();
-                res.status(200).json({success: true, message: 'Tạo thành công', data: {savedConversation}});
-            } catch (err) {
-                res.status(500).json({success: false, message: err.message, data: {}});
-            }
-        }
-    } catch (err) {
-        res.status(500).json({success: false, message: err.message, data: {}});
-    }
-});
+// router.get("/getConversation/:firstUserId", async (req, res) => {
+//     try {
+//         const userId = req.userId;
+//         const firstUserId = req.params.firstUserId;
+//         const conversation = await Conversation.findOne({
+//             $and: [{members1: userId}, {}]
+//         });
+//         if (conversation) {
+//             res.status(200).json({success: true, message: 'Lấy thành công', data: {conversation}})
+//         } else {
+//             const newConversation = new Conversation({
+//                 members: [userId, firstUserId],
+//             });
+//             try {
+//                 const savedConversation = await newConversation.save();
+//                 res.status(200).json({success: true, message: 'Tạo thành công', data: {savedConversation}});
+//             } catch (err) {
+//                 res.status(500).json({success: false, message: err.message, data: {}});
+//             }
+//         }
+//     } catch (err) {
+//         res.status(500).json({success: false, message: err.message, data: {}});
+//     }
+// });
 
 // CẬP NHẬT TIN NHẮN CUỐI CỦA CUỘC TRÒ TRUYỆN
 router.put('/updateConversation/:conversationId', async (req, res) => {

@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
 
 const ConversationSchema = new mongoose.Schema({
-    members: {
-        type: Array,
-        default: [],
+    members1: {
+        type: String,
+        ref: 'user',
+    },
+    members2: {
+        type: String,
+        ref: 'user',
     },
     messageLast: {
         type: String,
