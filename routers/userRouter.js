@@ -57,6 +57,19 @@ router.get("/getAllUser", verifyToken, async (req, res) => {
   }
 });
 
+// GET ALL USER NO FOLLOW
+router.get("/getAllUserNoFollow", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    var listUser = [];
+    const follow = await User.find();
+    res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
+  } catch (err) {
+    res.status(500).json({success: false, message: err.message, data: {}});
+  }
+});
+
+
 // UPDATE INFO A USER
 router.put("/updateUser", verifyToken, async (req, res) => {
   try {

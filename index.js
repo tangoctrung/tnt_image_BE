@@ -16,7 +16,7 @@ const messageRouter = require('./routers/messageRouter');
 const postRouter = require('./routers/postRouter');
 
 // config middleware
-app.use(cors());
+// app.use(cors());
 dotenv.config();
 app.use(express.json());
 
@@ -25,13 +25,10 @@ db.connectDB();
 
 // connect to socketServer
 const httpServer = http.createServer(app);
-const io = require("socket.io")(httpServer, {
-  cors: {
-    origin: "*",
-  },
-});
+const io = require("socket.io")(httpServer);
 
 io.on("connection", (socket) => {
+    
     socketServer(socket);
 });
 
