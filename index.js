@@ -28,7 +28,7 @@ const httpServer = http.createServer(app);
 const io = require("socket.io")(httpServer);
 
 io.on("connection", (socket) => {
-    
+    console.log("socket connection: " + socket.id);
     socketServer(socket);
 });
 

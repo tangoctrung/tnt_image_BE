@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "nodemon index",
     "server": "nodemon index"
   },
   "author": "",
@@ -19,6 +19,6 @@
     "mongoose": "^6.2.4",
     "nodemon": "^2.0.15",
     "path": "^0.12.7",
-    "socket.io": "^4.4.1"
+    "socket.io": "^2.3.0"
   }
 }
