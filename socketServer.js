@@ -17,26 +17,29 @@ function socketServer(socket) {
     socket.on("addUser", userId => {
         // addUser(userId, socket.id);
         !users.some((user) => user.userId === userId) && users.push({ userId, socketId: socket.id });
+        console.log(users);
         socket.emit("getUser", users);
     });
 
     // khi nhắn tin và nhận tin
-    socket.on("sendMessage", ({ m, receivedId }) => {
+    socket.on("sendMessage", ({dataMessage, receivedId}) => {
+        // console.log(s);
         // const user = getUser(receivedId);
         const user = users.find((user) => user.userId === receivedId);
-        socket.to(user?.socketId).emit("getMessage", m);
+        console.log(receivedId?.toString(), user?.userId);
+        socket.to(user?.socketId).emit("getMessage", dataMessage);
     });
 
     // xóa tin nhắn
     socket.on("deleteMessage", ({ messageId, receivedId }) => {
         const user = users.find((user) => user.userId === receivedId);
-        socket.to(user?.socketId).emit("deleteMessageToClient", { messageId });
+        socket.to(user.socketId).emit("deleteMessageToClient", { messageId });
     });
 
     // gửi ám hiệu typing khi chat 2 người
     socket.on("typing", ({ senderId, receivedId, typing }) => {
         const user = users.find((user) => user.userId === receivedId);
-        socket.to(user?.socketId).emit("typingToClient", {
+        socket.to(user.socketId).emit("typingToClient", {
             senderId, typing
         });
     });
@@ -99,7 +102,7 @@ function socketServer(socket) {
     // khi người dùng tạo bài viết thì gửi đến thông báo
     socket.on("createPost", (noti) => {
         users.forEach(user => {
-            if (noti.receiverNotiId?.includes(user.userId)) {
+            if (noti.receiverNotiId.includes(user.userId)) {
                 socket.to(user.socketId).emit("createPostToClient", noti);
             }
         });
@@ -108,7 +111,7 @@ function socketServer(socket) {
     // khi người dùng likePost. dislikePost thì gửi đến thông báo
     socket.on("likePostNoti", (noti) => {
         users.forEach(user => {
-            if (noti.receiverNotiId?.includes(user.userId)) {
+            if (noti.receiverNotiId.includes(user.userId)) {
                 socket.to(user.socketId).emit("likePostNotiToClient", noti);
             }
         });
@@ -117,7 +120,7 @@ function socketServer(socket) {
     // khi người dùng likeComment thì gửi đến thông báo
     socket.on("likeCommentNoti", (noti) => {
         users.forEach(user => {
-            if (noti.receiverNotiId?.includes(user.userId)) {
+            if (noti.receiverNotiId.includes(user.userId)) {
                 socket.to(user.socketId).emit("likeCommentNotiToClient", noti);
             }
         });
@@ -126,7 +129,7 @@ function socketServer(socket) {
     // khi người dùng commentPost thì gửi đến thông báo
     socket.on("commentPostNoti", (noti) => {
         users.forEach(user => {
-            if (noti.receiverNotiId?.includes(user.userId)) {
+            if (noti.receiverNotiId.includes(user.userId)) {
                 socket.to(user.socketId).emit("commentPostNotiToClient", noti);
             }
         });

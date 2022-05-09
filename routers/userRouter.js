@@ -8,16 +8,22 @@ const verifyToken = require("../middleware/auth");
 // TÌM KIẾM NGƯỜI DÙNG THEO USERNAME OR EMAIL
 router.get('/searchUser', verifyToken, async (req, res) => {
   const username = req.query.username;
-  let userArray = [];
+  
   try {
-      const users = await User.find();
-      users.map(user => {
-           if (user.username.toLowerCase().includes(username.toLowerCase()) ||
-              user.email.toLowerCase().includes(username.toLowerCase())) {
-               userArray.push(user);
-           }
-      })
-      res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {userArray}});
+      const users = await User.find({$text: {$search: username}});
+      if (users.length == 0) {
+        let users = [];
+        let userArray = await User.find();
+        userArray.map(user => {
+             if (user.username.toLowerCase().includes(username.toLowerCase()) ||
+                user.email.toLowerCase().includes(username.toLowerCase())) {
+                 users.push(user);
+             }
+        })
+        return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
+      }
+      
+      res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
   } catch (err) {
       res.status(500).json({success: false, message: err.message, data: {}});
   }

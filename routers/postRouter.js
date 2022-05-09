@@ -72,9 +72,22 @@ router.get('/getpostuser/:userId', verifyToken, async (req, res) => {
 router.get('/getpostthemen', verifyToken, async (req, res) => {
     const themen = req.query.themen;
     try {
-        const posts = await Post.find({ themen : { $all : [themen] }}).populate('authorId', [
+        // const posts = await Post.find({ themen : { $all : [themen] }}).populate('authorId', [
+        //     'username', 'avatar'
+        // ]);
+        const posts = await Post.find({$text: {$search: themen}}).populate('authorId', [
             'username', 'avatar'
         ]);
+        if (posts.length == 0) {
+            let posts = [];
+            let postArray = await Post.find();
+            postArray.map(post => {
+                if (post.body.toLowerCase().includes(themen.toLowerCase())) {
+                    posts.push(post);
+                }
+            })
+            return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {posts}});
+        }
         res.status(200).json({success: true, message: "Lấy bài viết thành công", data: {posts}});
     } catch (err) {
         res.status(500).json({success: false, message: err.message, data: {}});
@@ -93,6 +106,21 @@ router.get('/getpostfollowing', verifyToken, async (req, res) => {
             })
         );
         const listPost = userPosts.concat(...friendPosts);
+
+        // xử lý logic sắp xếp posts
+        listPost.map((post, index) => {
+            const upVote = post.likes.length;
+            const date = post.createdAt.getTime() / 1000;
+            const dateOld = new Date('2020', '23', '7').getTime() / 1000;
+            if (upVote <= 0) {
+                post.score = 0 + (date - dateOld) / 4500000;
+            } else {
+                post.score = Math.log10(upVote) + (date - dateOld) / 4500000;
+            }
+        });
+
+        listPost.sort((a, b) => a.score < b.score ? 1 : -1);    
+        
         return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {listPost}});
         
     } catch (err) {
@@ -102,9 +130,21 @@ router.get('/getpostfollowing', verifyToken, async (req, res) => {
 
 // GET ALL POST DISCOVER
 router.get('/getpostdiscover', verifyToken, async (req, res) => {
-    const userId = req.userId;
+    // const userId = req.userId;
     try {
         const listPost  = await Post.find().populate('authorId', ['id', 'username', 'avatar']);
+        listPost.map((post, index) => {
+            const upVote = post.likes.length;
+            const date = post.createdAt.getTime() / 1000;
+            const dateOld = new Date('2020', '23', '7').getTime() / 1000;
+            if (upVote <= 0) {
+                post.score = 0 + (date - dateOld) / 4500000;
+            } else {
+                post.score = Math.log10(upVote) + (date - dateOld) / 4500000;
+            }
+        });
+
+        listPost.sort((a, b) => a.score < b.score ? 1 : -1);  
         return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {listPost}});
         
     } catch (err) {

@@ -6,6 +6,10 @@ const PostSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    score: {
+        type: Number,
+        default: 0,
+    },
     likes: [
         {ref: 'user', type: String}     
     ],
@@ -28,5 +32,7 @@ const PostSchema = new mongoose.Schema({
     }
 
 }, {timestamps: true})
+
+PostSchema.index({body: 'text', themen: 'text'});
 
 module.exports = mongoose.model("post", PostSchema); 
