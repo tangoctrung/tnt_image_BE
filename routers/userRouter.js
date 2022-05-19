@@ -144,6 +144,7 @@ router.get("/savePost", verifyToken, async (req, res) => {
         return Post.findById(postId).populate('authorId', ['id', 'username', 'avatar']);
       })
     );
+    posts.sort((a, b) => a.score < b.score ? 1 : -1);  
     res.status(200).json({success: true, message: 'Thành công', data: {posts}});
   } catch (err) {
     res.status(500).json({success: false, message: err.message, data: {}});

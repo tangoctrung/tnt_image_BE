@@ -62,6 +62,7 @@ router.get('/getpostuser/:userId', verifyToken, async (req, res) => {
             .populate('authorId', [
                 'username', 'avatar'
             ]);  
+        posts.sort((a, b) => a.score < b.score ? 1 : -1);  
         res.status(200).json({success: true, message: "Lấy bài viết thành công", data: {posts}});
     } catch (err) {
         res.status(500).json({success: false, message: err.message, data: {}});

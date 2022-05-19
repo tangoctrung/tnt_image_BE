@@ -7,6 +7,10 @@ router.post('/createConversation', verifyToken, async (req, res) => {
     try {
         const userId = req.userId;
         const firstUserId = req.body.firstUserId;
+        const conversation = await Conversation.findOne({$or: [{$and:[{members1: userId}, {members2: firstUserId}]}, {$and:[{members1: firstUserId}, {members2: userId}]}]});
+        if (conversation) {
+            return res.status(200).json({success: true, message: 'Cuộc trò chuyện đã tồn tại', data: {conversation}});
+        }
         const newConversation = new Conversation({
             members1: userId,
             members2: firstUserId,

@@ -39,7 +39,7 @@ router.post("/login", async (req, res) => {
         const token = jwt.sign({_id: newUser._id, _role: newUser.role}, process.env.ACCESS_TOKEN_SECRET);
         const { password, ...others } = newUser._doc
         // res.header('auth-token', token);
-        res.status(200).json({success: true, message: "Đăng nhập thành công", data: {newUser: others, token: token}});
+        res.status(200).json({success: true, message: "Đăng nhập thành công", data: {newUser: {...others}, token}});
 
     } catch (err) {
         res.status(500).json({success: false, message: err.message, data: {}});
