@@ -20,6 +20,10 @@ router.get('/searchUser', verifyToken, async (req, res) => {
                  users.push(user);
              }
         })
+        if (users.length == 0) {
+          let users = await User.aggregate([{$sample: { size: 5 }}]);
+          return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
+        }
         return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {users}});
       }
       

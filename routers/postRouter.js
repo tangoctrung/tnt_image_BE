@@ -87,6 +87,10 @@ router.get('/getpostthemen', verifyToken, async (req, res) => {
                     posts.push(post);
                 }
             })
+            if (posts.length == 0) {
+                let posts = await Post.aggregate([{$sample: { size: 5 }}]);
+                return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {posts}});
+            }
             return res.status(200).json({success: true, message: "Lấy dữ liệu thành công", data: {posts}});
         }
         res.status(200).json({success: true, message: "Lấy bài viết thành công", data: {posts}});
